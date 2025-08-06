@@ -23,7 +23,7 @@ type AudioMessage = {
  * Implements a chat-like interface for audio messages
  */
 export const useVoiceChat = () => {
-  const SERVER_URL = process.env.SERVER_URL ?? '10.0.2.2:3000';
+  const SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL ?? '10.0.2.2:3000';
   // Socket connection
   const socketRef = useRef<Socket | null>(null);
 
