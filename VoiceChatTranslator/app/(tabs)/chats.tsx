@@ -1,13 +1,13 @@
 import {useState} from 'react';
-import {Alert, FlatList, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
+import {Alert, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
-import {Image} from 'expo-image';
 
 import {ThemedText} from '@/components/ThemedText';
 import {ThemedView} from '@/components/ThemedView';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import {ChatSession, useChatSessions} from '@/hooks/useChatSessions';
+import {SafeAreaView} from "react-native-safe-area-context";
+import {ThemedInput} from "@/components/ThemedInput";
 
 export default function ChatsScreen() {
   const router = useRouter();
@@ -87,21 +87,14 @@ export default function ChatsScreen() {
   };
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{light: '#A1CEDC', dark: '#1D3D47'}}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
+    <SafeAreaView style={styles.screenContainer}>
       <ThemedView style={styles.container}>
         <ThemedView style={styles.card}>
           <ThemedText style={styles.title}>Voice Chat Messenger</ThemedText>
 
           {/* New Chat Input */}
           <ThemedView style={styles.inputContainer}>
-            <TextInput
+            <ThemedInput
               style={styles.input}
               value={newSessionKey}
               onChangeText={setNewSessionKey}
@@ -141,11 +134,14 @@ export default function ChatsScreen() {
           </ThemedView>
         </ThemedView>
       </ThemedView>
-    </ParallaxScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  screenContainer:{
+    flex:1
+  },
   container: {
     flex: 1,
     padding: 16,
