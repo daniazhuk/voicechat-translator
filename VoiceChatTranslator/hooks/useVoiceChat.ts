@@ -1,6 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import {useEffect, useRef, useState} from 'react';
+import {io, Socket} from 'socket.io-client';
 import {Audio} from "expo-av";
+import {
+  AndroidAudioEncoder,
+  AndroidOutputFormat,
+  IOSAudioQuality, IOSBitRateStrategy,
+  IOSOutputFormat
+} from "expo-av/build/Audio/RecordingConstants";
 
 // Define types for session status
 type SessionStatus = {
@@ -9,9 +15,13 @@ type SessionStatus = {
 };
 
 // Define type for audio messages
-type AudioMessage = {
+export type AudioMessage = {
   id: string;
   audioBase64: string;
+  text?: string;
+  translatedText?: string;
+  fromLanguage?: string;
+  toLanguage?: string;
   timestamp: string;
   isLocal: boolean;
   isPlaying: boolean;
@@ -69,7 +79,7 @@ export const useVoiceChat = () => {
       console.log('Connected to server with ID:', socket.id);
 
       // Join the session
-      socket.emit('joinSession', sessionKey);
+      socket.emit('joinSession', {sessionKey, language: 'en-us'});
     });
 
     // Handle session status updates
@@ -79,14 +89,14 @@ export const useVoiceChat = () => {
     });
 
     // Handle receiving data
-    socket.on('receiveData', async (data) => {
-      console.log('Received data:', data);
+    socket.on('voiceReceived', async (data) => {
+      console.log('Received data:', data.text);
 
       // If the data is audio, add it to messages
-      if (data.type === 'audio' && data.audioBase64) {
+      if (data.audioBase64) {
         const newMessage: AudioMessage = {
           id: `remote-${Date.now()}`,
-          audioBase64: data.audioBase64,
+          ...data,
           timestamp: data.timestamp || new Date().toISOString(),
           isLocal: false,
           isPlaying: false,
@@ -163,7 +173,32 @@ export const useVoiceChat = () => {
 
       // Start recording
       const { recording: newRecording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+        {
+          android: {
+            audioEncoder: AndroidAudioEncoder.HE_AAC,
+            extension: '.mp3',
+            outputFormat: AndroidOutputFormat.DEFAULT,
+            sampleRate: 44100,
+            numberOfChannels: 1,
+          },
+          ios: {
+            extension: '.mp3',
+            outputFormat: IOSOutputFormat.MPEGLAYER3,
+            audioQuality: IOSAudioQuality.MEDIUM,
+            sampleRate: 44100,
+            numberOfChannels: 1,
+            bitRate: 128000,
+            bitRateStrategy: IOSBitRateStrategy.CONSTANT,
+            bitDepthHint: 16,
+            linearPCMBitDepth: 16,
+            linearPCMIsBigEndian: false,
+            linearPCMIsFloat: false
+          },
+          web: {
+            mimeType: undefined,
+            bitsPerSecond: undefined
+          }
+        }
       );
 
       setRecording(newRecording);
@@ -235,8 +270,7 @@ export const useVoiceChat = () => {
 
       // Send the audio data to the server
       if (socketRef.current && sessionStatus.status === 'connected') {
-        socketRef.current.emit('transferData', {
-          type: 'audio',
+        socketRef.current.emit('voiceTransfer', {
           audioBase64: base64Audio,
           timestamp: new Date().toISOString(),
         });

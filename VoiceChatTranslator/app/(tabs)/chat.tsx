@@ -150,10 +150,7 @@ export default function ChatScreen() {
               messages.map((message) => (
                 <AudioMessage
                   key={message.id}
-                  id={message.id}
-                  timestamp={message.timestamp}
-                  isLocal={message.isLocal}
-                  isPlaying={message.isPlaying}
+                  message={message}
                   onPlay={playMessage}
                 />
               ))
