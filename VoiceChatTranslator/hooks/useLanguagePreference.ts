@@ -1,8 +1,11 @@
 import {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Localization from 'expo-localization';
 
 // Define common BCP-47 language codes
+const DEFAULT_LANGUAGE = Localization.getLocales()[0].languageTag ?? 'en-US';
 export const LANGUAGE_OPTIONS = [
+  {code: DEFAULT_LANGUAGE, label: 'Auto-detect'},
   {code: 'en-US', label: 'English (US)'},
   {code: 'en-GB', label: 'English (UK)'},
   {code: 'es-ES', label: 'Spanish (Spain)'},
@@ -21,9 +24,6 @@ export const LANGUAGE_OPTIONS = [
 
 // Storage key for language preference
 const LANGUAGE_STORAGE_KEY = 'userLanguagePreference';
-
-// Default language code
-const DEFAULT_LANGUAGE = 'en-US';
 
 /**
  * Custom hook for managing user language preference

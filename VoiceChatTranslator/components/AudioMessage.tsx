@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {ThemedText} from './ThemedText';
@@ -15,6 +15,8 @@ export const AudioMessage: React.FC<AudioMessageProps> = ({
                                                             message,
                                                             onPlay,
                                                           }) => {
+  const [showText, setShowText] = useState(false);
+
   // Format the timestamp for display
   const formatTime = (isoString: string) => {
     try {
@@ -24,6 +26,10 @@ export const AudioMessage: React.FC<AudioMessageProps> = ({
       console.error('Error formatting timestamp:', error);
       return 'Unknown time';
     }
+  };
+
+  const toggleTextVisibility = () => {
+    setShowText(!showText);
   };
 
   return (
@@ -60,7 +66,38 @@ export const AudioMessage: React.FC<AudioMessageProps> = ({
             <Ionicons name="volume-high" size={20} color="#4CAF50"/>
           </View>
         )}
+
+        {(message.text || message.translatedText) && (
+          <TouchableOpacity
+            style={styles.textToggleButton}
+            onPress={toggleTextVisibility}
+          >
+            <Ionicons
+              name={showText ? "chevron-up-circle" : "chevron-down-circle"}
+              size={20}
+              color="#2196F3"
+            />
+          </TouchableOpacity>
+        )}
       </View>
+
+      {showText && (message.text || message.translatedText) && (
+        <View style={styles.textContainer}>
+          {message.text && (
+            <View style={styles.textSection}>
+              <ThemedText style={styles.textLabel}>Original:</ThemedText>
+              <ThemedText style={styles.messageText}>{message.text}</ThemedText>
+            </View>
+          )}
+
+          {message.translatedText && (
+            <View style={styles.textSection}>
+              <ThemedText style={styles.textLabel}>Translation:</ThemedText>
+              <ThemedText style={styles.messageText}>{message.translatedText}</ThemedText>
+            </View>
+          )}
+        </View>
+      )}
     </ThemedView>
   );
 };
@@ -106,5 +143,28 @@ const styles = StyleSheet.create({
   },
   playingIndicator: {
     marginLeft: 8,
+  },
+  textToggleButton: {
+    marginLeft: 8,
+    padding: 4,
+  },
+  textContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  textSection: {
+    marginBottom: 8,
+  },
+  textLabel: {
+    fontWeight: 'bold',
+    fontSize: 12,
+    marginBottom: 2,
+    color: '#aaa',
+  },
+  messageText: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
