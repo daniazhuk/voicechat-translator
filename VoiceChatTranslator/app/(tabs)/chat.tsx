@@ -85,7 +85,7 @@ export default function ChatScreen() {
           style={styles.backButton}
           onPress={handleBackToChats}
         >
-          <Ionicons name="arrow-back" size={24} color="#4CAF50" />
+          <Ionicons name="arrow-back" size={24} color="#3B89E3" />
         </TouchableOpacity>
 
         <ThemedView style={styles.headerTitleContainer}>
@@ -165,7 +165,7 @@ export default function ChatScreen() {
           {/* Playing Indicator */}
           {isPlaying && (
             <ThemedView style={styles.playingIndicator}>
-              <Ionicons name="volume-high" size={24} color="#4CAF50" />
+              <Ionicons name="volume-high" size={24} color="#3B89E3" />
               <ThemedText style={styles.playingText}>
                 Playing audio...
               </ThemedText>
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   connectButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#3B89E3',
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
@@ -302,6 +302,6 @@ const styles = StyleSheet.create({
   },
   playingText: {
     fontSize: 14,
-    color: '#4CAF50',
+    color: '#3B89E3',
   },
 });

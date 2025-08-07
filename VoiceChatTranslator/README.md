@@ -1,50 +1,90 @@
-# Welcome to your Expo app 👋
+# Voice Chat Translator Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native mobile application that enables real-time voice communication between users speaking different languages. The app automatically translates voice messages between users with different language preferences.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Real-time Voice Translation**: Communicate with people who speak different languages
+- **Text Display**: View the original text and translation of voice messages
+- **Multiple Languages**: Support for various languages
+- **Session Management**: Connect with others using unique session keys
+- **User-friendly Interface**: Simple and intuitive design
 
+## Prerequisites
+
+- Node.js (v14 or higher)
+- npm or yarn
+- Expo CLI
+- iOS Simulator or Android Emulator (optional for development)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/daniazhuk/voicechat-translator.git
+   cd voicechat-translator/VoiceChatTranslator
+   ```
+
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
+3. Configure the server URL:
+   - Create a `.env` file in the project root with:
+   ```
+   EXPO_PUBLIC_SERVER_URL=your-server-url
+   ```
+   - For local development, you can use `10.0.2.2:3000` for Android emulator or `localhost:3000` for iOS
 
+## Usage
+
+1. Start the app:
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+2. In the Expo developer tools, choose to run the app on:
+   - iOS Simulator
+   - Android Emulator
+   - Physical device using Expo Go app (scan the QR code)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## How to Use the App
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+1. **Select Your Language**:
+   - Tap the language selector at the top of the main screen
+   - Choose your preferred language from the list
 
-## Get a fresh project
+2. **Create or Join a Chat Session**:
+   - Enter a unique session key in the input field
+   - Tap "Add Chat" to create or join a session
+   - Share the same session key with the person you want to chat with
 
-When you're ready, run:
+3. **Start a Voice Chat**:
+   - Select a chat session from your list
+   - Wait for the other person to join (if they haven't already)
+   - Once connected, you'll see "Devices connected successfully"
 
-```bash
-npm run reset-project
-```
+4. **Send Voice Messages**:
+   - Press and hold the microphone button to record
+   - Release to send the message
+   - Your message will be automatically translated to the recipient's language
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+5. **Listen to Messages**:
+   - Tap the play button on received messages to hear them
+   - View the original text and translation by tapping the text toggle button
 
-## Learn more
+## Development
 
-To learn more about developing your project with Expo, look at the following resources:
+This project is built with:
+- [React Native](https://reactnative.dev/)
+- [Expo](https://expo.dev/)
+- [Socket.IO Client](https://socket.io/docs/v4/client-api/)
+- [Expo AV](https://docs.expo.dev/versions/latest/sdk/audio-av/)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Troubleshooting
 
-## Join the community
+- **Connection Issues**: Make sure the server is running and the server URL is correctly configured
+- **Audio Recording Problems**: Check that your device has microphone permissions enabled
+- **Language Not Available**: The app supports languages provided by the translation service
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
 
 // Define common BCP-47 language codes
-const DEFAULT_LANGUAGE = Localization.getLocales()[0].languageTag ?? 'en-US';
+const DEFAULT_LANGUAGE = (Localization.getLocales()[0].languageTag ?? 'en-US')+'auto';
 export const LANGUAGE_OPTIONS = [
   {code: DEFAULT_LANGUAGE, label: 'Auto-detect'},
   {code: 'en-US', label: 'English (US)'},
@@ -34,22 +34,22 @@ export const useLanguagePreference = () => {
   const [language, setLanguageState] = useState<string>(DEFAULT_LANGUAGE);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const loadLanguage = async () => {
+    try {
+      setIsLoading(true);
+      const storedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+      if (storedLanguage) {
+        setLanguageState(storedLanguage);
+      }
+    } catch (error) {
+      console.error('Error loading language preference:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Load language preference from AsyncStorage on mount
   useEffect(() => {
-    const loadLanguage = async () => {
-      try {
-        setIsLoading(true);
-        const storedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-        if (storedLanguage) {
-          setLanguageState(storedLanguage);
-        }
-      } catch (error) {
-        console.error('Error loading language preference:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadLanguage();
   }, []);
 
@@ -87,6 +87,7 @@ export const useLanguagePreference = () => {
 
   return {
     language,
+    loadLanguage,
     setLanguage,
     getLanguageLabel,
     isLoading,

@@ -44,6 +44,11 @@ export default function ChatsScreen() {
     );
   };
 
+  const handleChangeSessionKey = (newSessionKey: string) => {
+    setNewSessionKey(newSessionKey.replace(/\D/g, ''))
+  }
+  const validateSessionKey = newSessionKey.length<4
+
   // Handle selecting a chat session
   const handleSelectChat = (session: ChatSession) => {
     // Update the last used timestamp
@@ -69,7 +74,7 @@ export default function ChatsScreen() {
         onPress={() => handleSelectChat(item)}
       >
         <ThemedView style={styles.chatIconContainer}>
-          <Ionicons name="chatbubble" size={24} color="#4CAF50"/>
+          <Ionicons name="chatbubble" size={24} color="#3B89E3"/>
         </ThemedView>
 
         <ThemedView style={styles.chatInfo}>
@@ -101,7 +106,7 @@ export default function ChatsScreen() {
             onPress={() => setLanguageModalVisible(true)}
           >
             <ThemedView style={styles.languageSelectorContent}>
-              <Ionicons name="language" size={20} color="#4CAF50" />
+              <Ionicons name="language" size={20} color="#3B89E3" />
               <ThemedText style={styles.languageText}>
                 {getLanguageLabel()}
               </ThemedText>
@@ -114,14 +119,16 @@ export default function ChatsScreen() {
             <ThemedInput
               style={styles.input}
               value={newSessionKey}
-              onChangeText={setNewSessionKey}
+              keyboardType='number-pad'
+              onChangeText={handleChangeSessionKey}
               placeholder="Enter new session key"
               placeholderTextColor="#999"
+              maxLength={16}
             />
             <TouchableOpacity
-              style={styles.addButton}
+              style={validateSessionKey ? styles.disabledButton : styles.addButton}
               onPress={handleAddChat}
-              disabled={!newSessionKey.trim()}
+              disabled={validateSessionKey}
             >
               <ThemedText style={styles.buttonText}>Add Chat</ThemedText>
             </TouchableOpacity>
@@ -173,7 +180,7 @@ export default function ChatsScreen() {
 
             <FlatList
               data={languageOptions}
-              keyExtractor={(item) => item.code}
+              keyExtractor={(item) => item.code+item.label}
               renderItem={({item}) => (
                 <TouchableOpacity
                   style={[
@@ -194,7 +201,7 @@ export default function ChatsScreen() {
                     {item.label}
                   </ThemedText>
                   {language === item.code && (
-                    <Ionicons name="checkmark" size={20} color="#4CAF50" />
+                    <Ionicons name="checkmark" size={20} color="#3B89E3" />
                   )}
                 </TouchableOpacity>
               )}
@@ -293,7 +300,7 @@ const styles = StyleSheet.create({
   },
   selectedLanguageOptionText: {
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#3B89E3',
   },
   inputContainer: {
     marginBottom: 16,
@@ -307,9 +314,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   addButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#3B89E3',
     borderRadius: 8,
     padding: 12,
+    alignItems: 'center',
+  },
+  disabledButton: {
+    backgroundColor: '#3B89E3',
+    borderRadius: 8,
+    padding: 12,
+    opacity: 0.5,
     alignItems: 'center',
   },
   buttonText: {

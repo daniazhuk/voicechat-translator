@@ -48,7 +48,7 @@ export const AudioMessage: React.FC<AudioMessageProps> = ({
           <Ionicons
             name={message.isPlaying ? 'pause-circle' : 'play-circle'}
             size={36}
-            color={message.isPlaying ? '#4CAF50' : '#2196F3'}
+            color={message.isPlaying ? '#3B89E3' : '#2196F3'}
           />
         </TouchableOpacity>
 
@@ -63,7 +63,7 @@ export const AudioMessage: React.FC<AudioMessageProps> = ({
 
         {message.isPlaying && (
           <View style={styles.playingIndicator}>
-            <Ionicons name="volume-high" size={20} color="#4CAF50"/>
+            <Ionicons name="volume-high" size={20} color="#3B89E3"/>
           </View>
         )}
 
@@ -116,11 +116,11 @@ const styles = StyleSheet.create({
   },
   localMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#687076',
+    backgroundColor:'#e3f1ff'
   },
   remoteMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#687076',
+    backgroundColor: '#f7f7f7'
   },
   messageContent: {
     flexDirection: 'row',

@@ -34,7 +34,7 @@ export const useVoiceChat = () => {
   const socketRef = useRef<Socket | null>(null);
 
   // Get the user's language preference
-  const {language} = useLanguagePreference();
+  const {language, loadLanguage} = useLanguagePreference();
 
   // Session state
   const [sessionKey, setSessionKey] = useState<string>('');
@@ -76,9 +76,12 @@ export const useVoiceChat = () => {
     // Handle connection
     socket.on('connect', () => {
       console.log('Connected to server with ID:', socket.id);
+      loadLanguage().then(() => {
+        const targetLanguage = language.includes('auto') ? language.toLowerCase().substring(0, 5) : language.toLowerCase();
+        console.log('Target language:', targetLanguage);
+        socket.emit('joinSession', {sessionKey, language: targetLanguage});
+      });
 
-      // Join the session with the user's preferred language
-      socket.emit('joinSession', {sessionKey, language: language.toLowerCase()});
     });
 
     // Handle session status updates
