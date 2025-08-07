@@ -1,12 +1,8 @@
 import {useEffect, useRef, useState} from 'react';
 import {io, Socket} from 'socket.io-client';
 import {Audio} from "expo-av";
-import {
-  AndroidAudioEncoder,
-  AndroidOutputFormat,
-  IOSAudioQuality, IOSBitRateStrategy,
-  IOSOutputFormat
-} from "expo-av/build/Audio/RecordingConstants";
+import * as FileSystem from 'expo-file-system';
+import {useLanguagePreference} from './useLanguagePreference';
 
 // Define types for session status
 type SessionStatus = {
@@ -36,6 +32,9 @@ export const useVoiceChat = () => {
   const SERVER_URL = process.env.EXPO_PUBLIC_SERVER_URL ?? '10.0.2.2:3000';
   // Socket connection
   const socketRef = useRef<Socket | null>(null);
+
+  // Get the user's language preference
+  const {language} = useLanguagePreference();
 
   // Session state
   const [sessionKey, setSessionKey] = useState<string>('');
@@ -78,8 +77,8 @@ export const useVoiceChat = () => {
     socket.on('connect', () => {
       console.log('Connected to server with ID:', socket.id);
 
-      // Join the session
-      socket.emit('joinSession', {sessionKey, language: 'en-us'});
+      // Join the session with the user's preferred language
+      socket.emit('joinSession', {sessionKey, language: language.toLowerCase()});
     });
 
     // Handle session status updates
@@ -158,7 +157,7 @@ export const useVoiceChat = () => {
       }
 
       // Request permissions
-      const { granted } = await Audio.requestPermissionsAsync();
+      const {granted} = await Audio.requestPermissionsAsync();
 
       if (!granted) {
         console.error('Audio recording permissions not granted');
@@ -172,34 +171,7 @@ export const useVoiceChat = () => {
       });
 
       // Start recording
-      const { recording: newRecording } = await Audio.Recording.createAsync(
-        {
-          android: {
-            audioEncoder: AndroidAudioEncoder.HE_AAC,
-            extension: '.mp3',
-            outputFormat: AndroidOutputFormat.DEFAULT,
-            sampleRate: 44100,
-            numberOfChannels: 1,
-          },
-          ios: {
-            extension: '.mp3',
-            outputFormat: IOSOutputFormat.MPEGLAYER3,
-            audioQuality: IOSAudioQuality.MEDIUM,
-            sampleRate: 44100,
-            numberOfChannels: 1,
-            bitRate: 128000,
-            bitRateStrategy: IOSBitRateStrategy.CONSTANT,
-            bitDepthHint: 16,
-            linearPCMBitDepth: 16,
-            linearPCMIsBigEndian: false,
-            linearPCMIsFloat: false
-          },
-          web: {
-            mimeType: undefined,
-            bitsPerSecond: undefined
-          }
-        }
-      );
+      const {recording: newRecording} = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HighQuality);
 
       setRecording(newRecording);
       setIsRecording(true);
@@ -235,26 +207,7 @@ export const useVoiceChat = () => {
       }
 
       // Read the file as base64
-      const base64Audio = await new Promise<string>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.onload = () => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-              // Extract the base64 part
-              const base64 = reader.result.split(',')[1];
-              resolve(base64);
-            } else {
-              reject(new Error('Failed to convert to base64'));
-            }
-          };
-          reader.readAsDataURL(xhr.response);
-        };
-        xhr.onerror = reject;
-        xhr.responseType = 'blob';
-        xhr.open('GET', uri);
-        xhr.send();
-      });
+      const base64Audio = await FileSystem.readAsStringAsync(uri, {encoding: FileSystem.EncodingType.Base64});
 
       // Create a new message for the local chat history
       const newMessage: AudioMessage = {
@@ -310,16 +263,16 @@ export const useVoiceChat = () => {
       setMessages(prevMessages =>
         prevMessages.map(m =>
           m.id === messageId
-            ? { ...m, isPlaying: true }
-            : { ...m, isPlaying: false }
+          ? {...m, isPlaying: true}
+          : {...m, isPlaying: false}
         )
       );
 
       setIsPlaying(true);
 
       // Create a new sound object from the audio data
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: `data:audio/m4a;base64,${message.audioBase64}` }
+      const {sound} = await Audio.Sound.createAsync(
+        {uri: `data:audio/m4a;base64,${message.audioBase64}`}
       );
 
       soundRef.current = sound;
@@ -334,7 +287,7 @@ export const useVoiceChat = () => {
           setIsPlaying(false);
           setMessages(prevMessages =>
             prevMessages.map(m =>
-              m.id === messageId ? { ...m, isPlaying: false } : m
+              m.id === messageId ? {...m, isPlaying: false} : m
             )
           );
           console.warn('Audio playback error:', status.error);
@@ -346,7 +299,7 @@ export const useVoiceChat = () => {
           setIsPlaying(false);
           setMessages(prevMessages =>
             prevMessages.map(m =>
-              m.id === messageId ? { ...m, isPlaying: false } : m
+              m.id === messageId ? {...m, isPlaying: false} : m
             )
           );
         }
@@ -357,7 +310,7 @@ export const useVoiceChat = () => {
       setIsPlaying(false);
       setMessages(prevMessages =>
         prevMessages.map(m =>
-          m.id === messageId ? { ...m, isPlaying: false } : m
+          m.id === messageId ? {...m, isPlaying: false} : m
         )
       );
     }

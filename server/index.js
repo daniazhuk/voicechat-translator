@@ -1,17 +1,20 @@
 // Load environment variables from .env file
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-const express = require('express');
-const http = require('http');
-const {Server} = require('socket.io');
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
+import cors from 'cors';
+import { handleSpeechToText } from './handleSpeechToText.js';
+import { handleTranslation } from './handleTranslation.js';
+import { handleTextToSpeech } from './handleTextToSpeech.js';
+import { m4aBase64ToWavBase64 } from './m4aBase64ToWavBase64.js';
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const port = process.env.PORT || 3000;
-const cors = require('cors');
-const {handleSpeechToText} = require("./handleSpeechToText");
-const {handleTranslation} = require("./handleTranslation");
-const {handleTextToSpeech} = require("./handleTextToSpeech");
 app.use(cors());
 
 // Store for active sessions
@@ -72,15 +75,16 @@ io.on('connection', (socket) => {
     const toLanguage = receiver.language;
     
     try {
-      const text = await handleSpeechToText(data.audioBase64, fromLanguage);
+      const wavBase64 = await m4aBase64ToWavBase64(data.audioBase64);
+      const text = await handleSpeechToText(wavBase64, fromLanguage);
       const translatedText = await handleTranslation(text, toLanguage);
-      const neededToTTS =  true// fromLanguage !== toLanguage
+      const neededToTTS =  fromLanguage !== toLanguage
       let translatedAudio;
       if (neededToTTS) {
         translatedAudio = await handleTextToSpeech(translatedText, toLanguage);
       }
       const sendData = {
-        audioBase64: neededToTTS ? translatedAudio : data.audioBase64,
+        audioBase64: neededToTTS && translatedAudio ? translatedAudio : wavBase64,
         text,
         translatedText,
         fromLanguage,

@@ -79,11 +79,11 @@ const styles = StyleSheet.create({
   },
   localMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#687076',
   },
   remoteMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#687076',
   },
   messageContent: {
     flexDirection: 'row',

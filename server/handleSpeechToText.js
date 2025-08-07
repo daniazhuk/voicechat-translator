@@ -9,8 +9,8 @@ export const handleSpeechToText = async (audioBase64, audioLanguage) => {
 
     const requestBody = {
         config: {
-            encoding: 'MP3',
-            sampleRateHertz: 44100,
+            encoding: 'LINEAR16',
+            sampleRateHertz: 16000,
             languageCode: language || 'en-US',
             model: 'default',
         },
