@@ -67,7 +67,7 @@ export default function ChatScreen() {
     if (sessionStatus.status !== 'idle') {
       disconnect();
     }
-    router.push('/(tabs)/chats');
+    router.push('/(main)/chats/');
   };
 
   // Scroll to bottom when new messages arrive

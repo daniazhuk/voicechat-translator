@@ -31,7 +31,6 @@ export const handleSpeechToText = async (audioBase64, audioLanguage) => {
             console.error('No transcription results:', result);
             return '';
         }
-        console.log(result.results)
         return result.results
             .map(result => result.alternatives[0].transcript)
             .join(' ');

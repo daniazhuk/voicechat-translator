@@ -5,6 +5,8 @@ import {StatusBar} from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import {useColorScheme} from '@/hooks/useColorScheme';
+import {LanguageProvider} from "@/components/LanguageProvider";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -19,11 +21,14 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'}/>
-      <Stack screenOptions={{ }}>
-        <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-        <Stack.Screen name="+not-found"/>
-      </Stack>
+      <LanguageProvider>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'}/>
+        <Stack screenOptions={{ }}>
+          <Stack.Screen name="(main)/chats" options={{headerShown: false}}/>
+          <Stack.Screen name="+not-found"/>
+        </Stack>
+        <Toast />
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

@@ -4,6 +4,7 @@ import {Ionicons} from '@expo/vector-icons';
 import {ThemedText} from './ThemedText';
 import {ThemedView} from './ThemedView';
 import {AudioMessage as AudioMessageType} from "@/hooks/useVoiceChat";
+import Toast from "react-native-toast-message";
 
 // Define props for the AudioMessage component
 type AudioMessageProps = {
@@ -23,7 +24,11 @@ export const AudioMessage: React.FC<AudioMessageProps> = ({
       const date = new Date(isoString);
       return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
     } catch (error) {
-      console.error('Error formatting timestamp:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error formatting timestamp:',
+        text2: error instanceof Error ? error.message : String(error),
+      });
       return 'Unknown time';
     }
   };
@@ -116,7 +121,7 @@ const styles = StyleSheet.create({
   },
   localMessage: {
     alignSelf: 'flex-end',
-    backgroundColor:'#e3f1ff'
+    backgroundColor: '#e3f1ff'
   },
   remoteMessage: {
     alignSelf: 'flex-start',

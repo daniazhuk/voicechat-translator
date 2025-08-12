@@ -1,26 +1,30 @@
 import {useState} from 'react';
-import {Alert, FlatList, StyleSheet, TouchableOpacity, Modal, View} from 'react-native';
+import {Alert, FlatList, Modal, StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {useRouter} from 'expo-router';
-
 import {ThemedText} from '@/components/ThemedText';
 import {ThemedView} from '@/components/ThemedView';
 import {ChatSession, useChatSessions} from '@/hooks/useChatSessions';
-import {useLanguagePreference} from '@/hooks/useLanguagePreference';
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ThemedInput} from "@/components/ThemedInput";
+import {useLanguage} from "@/components/LanguageProvider";
+import Toast from "react-native-toast-message";
 
 export default function ChatsScreen() {
   const router = useRouter();
   const {chatSessions, addChatSession, removeChatSession} = useChatSessions();
-  const {language, setLanguage, getLanguageLabel, languageOptions} = useLanguagePreference();
+  const {language, setLanguage, getLanguageLabel, languageOptions} = useLanguage();
   const [newSessionKey, setNewSessionKey] = useState('');
   const [isLanguageModalVisible, setLanguageModalVisible] = useState(false);
 
   // Handle creating a new chat session
   const handleAddChat = () => {
     if (!newSessionKey.trim()) {
-      Alert.alert('Error', 'Please enter a session key');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a session key'
+      });
       return;
     }
 
@@ -47,7 +51,7 @@ export default function ChatsScreen() {
   const handleChangeSessionKey = (newSessionKey: string) => {
     setNewSessionKey(newSessionKey.replace(/\D/g, ''))
   }
-  const validateSessionKey = newSessionKey.length<4
+  const validateSessionKey = newSessionKey.length < 4
 
   // Handle selecting a chat session
   const handleSelectChat = (session: ChatSession) => {
@@ -56,7 +60,7 @@ export default function ChatsScreen() {
 
     // Navigate to the chat screen with the session ID
     router.push({
-      pathname: '/(tabs)/chat',
+      pathname: '/(main)/chats/[sessionKey]',
       params: {sessionKey: session.id}
     });
   };
@@ -106,11 +110,11 @@ export default function ChatsScreen() {
             onPress={() => setLanguageModalVisible(true)}
           >
             <ThemedView style={styles.languageSelectorContent}>
-              <Ionicons name="language" size={20} color="#3B89E3" />
+              <Ionicons name="language" size={20} color="#3B89E3"/>
               <ThemedText style={styles.languageText}>
                 {getLanguageLabel()}
               </ThemedText>
-              <Ionicons name="chevron-down" size={16} color="#666" />
+              <Ionicons name="chevron-down" size={16} color="#666"/>
             </ThemedView>
           </TouchableOpacity>
 
@@ -174,13 +178,13 @@ export default function ChatsScreen() {
                 onPress={() => setLanguageModalVisible(false)}
                 style={styles.closeButton}
               >
-                <Ionicons name="close" size={24} color="#666" />
+                <Ionicons name="close" size={24} color="#666"/>
               </TouchableOpacity>
             </ThemedView>
 
             <FlatList
               data={languageOptions}
-              keyExtractor={(item) => item.code+item.label}
+              keyExtractor={(item) => item.code + item.label}
               renderItem={({item}) => (
                 <TouchableOpacity
                   style={[
@@ -201,7 +205,7 @@ export default function ChatsScreen() {
                     {item.label}
                   </ThemedText>
                   {language === item.code && (
-                    <Ionicons name="checkmark" size={20} color="#3B89E3" />
+                    <Ionicons name="checkmark" size={20} color="#3B89E3"/>
                   )}
                 </TouchableOpacity>
               )}
@@ -214,8 +218,8 @@ export default function ChatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screenContainer:{
-    flex:1
+  screenContainer: {
+    flex: 1
   },
   container: {
     flex: 1,

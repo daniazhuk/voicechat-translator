@@ -8,10 +8,10 @@ export default function TabLayout() {
         headerShown: false,
       }}>
       <Stack.Screen
-        name="chats"
+        name="index"
       />
       <Stack.Screen
-        name="chat"
+        name="[sessionKey]"
       />
     </Stack>
   );

@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from "react-native-toast-message";
 
 // Define the chat session type
 export type ChatSession = {
@@ -25,7 +26,11 @@ export const useChatSessions = () => {
           setChatSessions(JSON.parse(storedSessions));
         }
       } catch (error) {
-        console.error('Error loading chat sessions:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Error loading chat sessions:',
+          text2: error instanceof Error ? error.message : String(error),
+        });
       }
     };
 
@@ -38,7 +43,11 @@ export const useChatSessions = () => {
       try {
         await AsyncStorage.setItem('chatSessions', JSON.stringify(chatSessions));
       } catch (error) {
-        console.error('Error saving chat sessions:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Error saving chat sessions:',
+          text2: error instanceof Error ? error.message : String(error),
+        });
       }
     };
 

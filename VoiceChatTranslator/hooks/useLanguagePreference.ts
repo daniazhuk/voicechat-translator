@@ -1,11 +1,15 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
+import Toast from "react-native-toast-message";
 
-// Define common BCP-47 language codes
-const DEFAULT_LANGUAGE = (Localization.getLocales()[0].languageTag ?? 'en-US')+'auto';
+const STORAGE_KEY = 'userLanguagePreference';
+
+const SYSTEM_LOCALE =
+  Localization.getLocales?.()[0]?.languageTag?.trim() || 'en-US';
+
 export const LANGUAGE_OPTIONS = [
-  {code: DEFAULT_LANGUAGE, label: 'Auto-detect'},
+  {code: 'auto', label: `Auto-detect (System: ${SYSTEM_LOCALE})`},
   {code: 'en-US', label: 'English (US)'},
   {code: 'en-GB', label: 'English (UK)'},
   {code: 'es-ES', label: 'Spanish (Spain)'},
@@ -22,75 +26,60 @@ export const LANGUAGE_OPTIONS = [
   {code: 'uk-UA', label: 'Ukrainian'},
 ];
 
-// Storage key for language preference
-const LANGUAGE_STORAGE_KEY = 'userLanguagePreference';
+const LABEL_MAP = new Map(LANGUAGE_OPTIONS.map(o => [o.code, o.label]));
+const isValidCode = (code?: string | null) =>
+  !!code && (code === 'auto' || LABEL_MAP.has(code));
 
-/**
- * Custom hook for managing user language preference
- * Stores the selected language in BCP-47 format in AsyncStorage
- */
+
 export const useLanguagePreference = () => {
-  // State to store the selected language
-  const [language, setLanguageState] = useState<string>(DEFAULT_LANGUAGE);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [language, setLanguageState] = useState<string>('auto');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadLanguage = async () => {
-    try {
-      setIsLoading(true);
-      const storedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-      if (storedLanguage) {
-        setLanguageState(storedLanguage);
-      }
-    } catch (error) {
-      console.error('Error loading language preference:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const effectiveLanguage = language === 'auto' ? SYSTEM_LOCALE : language;
 
-  // Load language preference from AsyncStorage on mount
   useEffect(() => {
-    loadLanguage();
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        setLanguageState(isValidCode(stored) ? stored! : 'auto');
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Language load error:',
+          text2: error instanceof Error ? error.message : String(error),
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, []);
 
-  // Save language preference to AsyncStorage whenever it changes
-  useEffect(() => {
-    const saveLanguage = async () => {
-      try {
-        await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-      } catch (error) {
-        console.error('Error saving language preference:', error);
-      }
-    };
-
-    // Only save if not loading (prevents saving default before loading)
-    if (!isLoading) {
-      saveLanguage();
+  const setLanguage = useCallback(async (code: string) => {
+    const next = isValidCode(code) ? code : 'auto';
+    setLanguageState(next);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, next);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Language save error:',
+        text2: error instanceof Error ? error.message : String(error),
+      });
     }
-  }, [language, isLoading]);
+  }, []);
 
-  /**
-   * Set the language preference
-   * @param languageCode BCP-47 language code
-   */
-  const setLanguage = (languageCode: string) => {
-    setLanguageState(languageCode);
-  };
+  const getLanguageLabel = useCallback(
+    () => LABEL_MAP.get(language) ?? language,
+    [language],
+  );
 
-  /**
-   * Get the language label for the current code
-   */
-  const getLanguageLabel = () => {
-    const option = LANGUAGE_OPTIONS.find(opt => opt.code === language);
-    return option ? option.label : language;
-  };
+  const languageOptions = useMemo(() => LANGUAGE_OPTIONS, []);
 
   return {
-    language,
-    loadLanguage,
+    language: effectiveLanguage,
     setLanguage,
     getLanguageLabel,
     isLoading,
-    languageOptions: LANGUAGE_OPTIONS,
+    languageOptions,
   };
 };

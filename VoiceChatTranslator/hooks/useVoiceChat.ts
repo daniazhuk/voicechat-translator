@@ -2,7 +2,8 @@ import {useEffect, useRef, useState} from 'react';
 import {io, Socket} from 'socket.io-client';
 import {Audio} from "expo-av";
 import * as FileSystem from 'expo-file-system';
-import {useLanguagePreference} from './useLanguagePreference';
+import {useLanguage} from "@/components/LanguageProvider";
+import Toast from "react-native-toast-message";
 
 // Define types for session status
 type SessionStatus = {
@@ -34,7 +35,7 @@ export const useVoiceChat = () => {
   const socketRef = useRef<Socket | null>(null);
 
   // Get the user's language preference
-  const {language, loadLanguage} = useLanguagePreference();
+  const {language} = useLanguage();
 
   // Session state
   const [sessionKey, setSessionKey] = useState<string>('');
@@ -75,24 +76,17 @@ export const useVoiceChat = () => {
 
     // Handle connection
     socket.on('connect', () => {
-      console.log('Connected to server with ID:', socket.id);
-      loadLanguage().then(() => {
-        const targetLanguage = language.includes('auto') ? language.toLowerCase().substring(0, 5) : language.toLowerCase();
-        console.log('Target language:', targetLanguage);
-        socket.emit('joinSession', {sessionKey, language: targetLanguage});
-      });
-
+      const targetLanguage = language.includes('auto') ? language.toLowerCase().substring(0, 5) : language.toLowerCase();
+      socket.emit('joinSession', {sessionKey, language: targetLanguage});
     });
 
     // Handle session status updates
     socket.on('sessionStatus', (status: SessionStatus) => {
-      console.log('Session status:', status);
       setSessionStatus(status);
     });
 
     // Handle receiving data
     socket.on('voiceReceived', async (data) => {
-      console.log('Received data:', data.text);
 
       // If the data is audio, add it to messages
       if (data.audioBase64) {
@@ -111,7 +105,11 @@ export const useVoiceChat = () => {
 
     // Handle errors
     socket.on('error', (error) => {
-      console.error('Socket error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Socket error:',
+        text2: error
+      });
       setSessionStatus({
         status: 'error',
         message: error.message || 'An error occurred',
@@ -120,7 +118,6 @@ export const useVoiceChat = () => {
 
     // Handle disconnection
     socket.on('disconnect', () => {
-      console.log('Disconnected from server');
       setSessionStatus({
         status: 'idle',
         message: 'Disconnected from server',
@@ -155,7 +152,6 @@ export const useVoiceChat = () => {
       // If already recording, don't start a new recording
       // This prevents the "Only one Recording object can be prepared at a given time" error
       if (recording) {
-        console.log('Already recording, not starting a new recording');
         return;
       }
 
@@ -163,7 +159,10 @@ export const useVoiceChat = () => {
       const {granted} = await Audio.requestPermissionsAsync();
 
       if (!granted) {
-        console.error('Audio recording permissions not granted');
+        Toast.show({
+          type: 'error',
+          text1: 'Audio recording permissions not granted'
+        });
         return;
       }
 
@@ -179,9 +178,12 @@ export const useVoiceChat = () => {
       setRecording(newRecording);
       setIsRecording(true);
 
-      console.log('Recording started');
     } catch (error) {
-      console.error('Error starting recording:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error starting recording:',
+        text2: error instanceof Error ? error.message : String(error),
+      });
       // Ensure recording state is reset on error
       setRecording(null);
       setIsRecording(false);
@@ -196,7 +198,6 @@ export const useVoiceChat = () => {
     if (!recording) return;
 
     try {
-      console.log('Stopping recording...');
       setIsRecording(false);
 
       // Stop the recording
@@ -205,7 +206,10 @@ export const useVoiceChat = () => {
       // Get the recording URI
       const uri = recording.getURI();
       if (!uri) {
-        console.error('Recording URI is null');
+        Toast.show({
+          type: 'error',
+          text1: 'Recording URI is null'
+        });
         return;
       }
 
@@ -235,7 +239,11 @@ export const useVoiceChat = () => {
       // Reset recording
       setRecording(null);
     } catch (error) {
-      console.error('Error stopping recording:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error stopping recording:',
+        text2: error instanceof Error ? error.message : String(error),
+      });
       // Ensure recording state is reset on error
       setRecording(null);
       setIsRecording(false);
@@ -257,7 +265,10 @@ export const useVoiceChat = () => {
       // Find the message
       const message = messages.find(m => m.id === messageId);
       if (!message) {
-        console.error('Message not found');
+        Toast.show({
+          type: 'error',
+          text1: 'Message not found'
+        });
         return;
       }
 
@@ -275,7 +286,7 @@ export const useVoiceChat = () => {
 
       // Create a new sound object from the audio data
       const {sound} = await Audio.Sound.createAsync(
-        {uri: `data:audio/m4a;base64,${message.audioBase64}`}
+        {uri: `data:audio/mp3;base64,${message.audioBase64}`}
       );
 
       soundRef.current = sound;
@@ -293,7 +304,11 @@ export const useVoiceChat = () => {
               m.id === messageId ? {...m, isPlaying: false} : m
             )
           );
-          console.warn('Audio playback error:', status.error);
+          Toast.show({
+            type: 'error',
+            text1: 'Audio playback error:',
+            text2: status.error
+          });
           return;
         }
 
@@ -308,7 +323,11 @@ export const useVoiceChat = () => {
         }
       });
     } catch (error) {
-      console.error('Error playing audio:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error playing audio:',
+        text2: error instanceof Error ? error.message : String(error),
+      });
       // Reset playing state on error
       setIsPlaying(false);
       setMessages(prevMessages =>
